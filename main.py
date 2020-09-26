@@ -45,6 +45,10 @@ if __name__ == '__main__':
     # так можно открывать расположение файлов: myFileName = filedialog.askopenfilename(initialdir="/", title="Se", filetypes=[["av", "*.csv"], ["a", "*.xlsx"]])
     #myPathName = filedialog.askdirectory(initialdir="/", title="Select directory")
     f = filedialog.asksaveasfile(initialdir="/", title="Сохраните файл")
+
+    #при недуачной попытке сохраняется неудачный файл
+    None
+
     start_check = f.name.rfind('/')
     if start_check == -1:
         start_check = 0
