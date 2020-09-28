@@ -1,4 +1,4 @@
-#!/Users/aleksandrsemencov/Documents/GitHub/BigData/venv/bin/python
+#!/Users/lebedevila/PycharmProjects/BigData2/venv/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys
