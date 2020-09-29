@@ -8,5 +8,3 @@ def function1(input, output):
 
 if __name__ == '__main__':
     a = function1(12, 12)
-
-    None
