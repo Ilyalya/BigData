@@ -14,30 +14,37 @@ if __name__ == '__main__':
     from bs4 import BeautifulSoup
     import requests
 
-    url = "https://qna.habr.com"
-    page = requests.get(url)
-    print(page.status_code)
+    lists = []  # список интересных статей
+    interesting_items = []  # список конкретного элемента
 
-    lists = [] #список интересных статей
-    interesting_items = [] #список конкретного элемента
+    n = input(print("Введи количество страниц:", "\n"))  # это строковое значение
 
-    soup = BeautifulSoup(page.text, "html.parser")
-    #print soup
+    x = "https://qna.habr.com/questions/latest?page="
 
-    # с помощью findAll перечислим все необходимые нам элементы, сохраняя нужный нам тэг с классом
-    lists = soup.findAll('li', class_='content-list__item') #в lists хранятся основные вопросы (их ≈20), а также самые популярные (справа расположенные и они не помечаются тэгами языков программирования или технологий
+    for j in range(int(n)):
+        j += 1
+        url = x + str(j)
+        print(url)
+        page = requests.get(url)
+        print(page.status_code)
 
-    for i in range(len(lists)):
-        if lists[i].find('div', class_='question__content') is not None:
-            buf0 = lists[i].findAll('div', class_='question__content')[0].findAll('div', class_='question__content_fluid')[0]
-            buf1 = prepare_data(buf0.findAll('div', class_='question__tags')[0].findAll('ul', class_='tags-list tags-list_short')[0].text)
-            buf2 = prepare_data(buf0.findAll('h2', class_='question__title')[0].text)
-            interesting_items.append([str(i+1), buf1, buf2])
+        soup = BeautifulSoup(page.text, "html.parser")
+        #print soup
 
-    for i in range(len(interesting_items)):
-        print(interesting_items[i][0] + '. [' + interesting_items[i][1] + '] ' + interesting_items[i][2])
+        # с помощью findAll перечислим все необходимые нам элементы, сохраняя нужный нам тэг с классом
+        lists = soup.findAll('li', class_='content-list__item') #в lists хранятся основные вопросы (их ≈20), а также самые популярные (справа расположенные и они не помечаются тэгами языков программирования или технологий
 
-    # ВЫБИРАЕМ ПАПКУ СОХРАНЕНИЕ ЧЕРЕЗ ДИСПЕТЧЕР ФАЙЛОВ
+        for i in range(len(lists)):
+            if lists[i].find('div', class_='question__content') is not None:
+                buf0 = lists[i].findAll('div', class_='question__content')[0].findAll('div', class_='question__content_fluid')[0]
+                buf1 = prepare_data(buf0.findAll('div', class_='question__tags')[0].findAll('ul', class_='tags-list tags-list_short')[0].text)
+                buf2 = prepare_data(buf0.findAll('h2', class_='question__title')[0].text)
+                interesting_items.append([str(i+1), buf1, buf2])
+
+        for i in range(len(interesting_items)):
+            print(interesting_items[i][0] + '. [' + interesting_items[i][1] + '] ' + interesting_items[i][2])
+
+        # ВЫБИРАЕМ ПАПКУ СОХРАНЕНИЕ ЧЕРЕЗ ДИСПЕТЧЕР ФАЙЛОВ
     import csv
     from tkinter import filedialog
     from tkinter import *
