@@ -1,34 +1,91 @@
 import time
 import sys
+import getopt
+import threading
 import os
-from multiprocessing import Process, freeze_support
+import multiprocessing
 
-
-def info(title):
-    if hasattr(os, 'getppid'):  # only available on Unix
-        print('{0}:\tPID={1} PPID={2}'.format(title, os.getpid(), os.getppid()))
-    else:
-        print('{0}:\tPID={1}'.format(title, os.getpid()))
-
-
-def fun(name):
-    info('порождённый процесс')
-    print('процесс {0} выполняет функцию с параметром {1}'.format(os.getpid(), name))
-    time.sleep(0.5)
+# ЭТОТ КОД ДЕМОНСТРИРУЕТ ВРЕМЯ ПРОГОНА ПРОСТОГО ЦИКЛА 3 СПОСОБАМИ:
+# 1. классический, последовательный прогон;
+# 2. последовательный, то но с организацией параллельных потоков;
+# 3. параллельный;
+# 4. с помощью библиотеки (модуля) multiprocessing.
+def ncount(n):  # тестовая CPU-загружающая функция
+    while n > 0: n -= 1
 
 
 if __name__ == '__main__':
-    freeze_support()
-    nproc = len(sys.argv) > 1 and int(sys.argv[1]) or 3
-    print('число дочерних процессов ', nproc)
-    info('родительский процесс')
-    procs = []
-    for i in range(nproc):
-        procs.append(Process(target=fun, args=(i,)))
-    for i in range(nproc):
-        procs[i].start()
-    for i in range(nproc):
-        procs[i].join()
-    print('завершается родительский процесс')
+    repnum = 10000000
+    thrnum = 2
+    mode = 'stpm'  # варианты запуска
 
-    None
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "t:n:m:")
+    except getopt.GetoptError:
+        print("недопустимая опция команды или её значение")
+
+    for opt, arg in opts:
+        if opt[1:] == 't': thrnum = int(arg)
+        if opt[1:] == 'n': repnum = int(arg)
+        if opt[1:] == 'm': mode = arg
+
+    print("число процессоров (ядер) = {0:d}".format(multiprocessing.cpu_count()))
+    print("исполнение в Python версия {0:s}".format(sys.version))
+    print("число ветвей выполнения {0:d}".format(thrnum))
+    print("число циклов в ветви {0:d}".format(repnum))
+
+    if 's' in mode:
+        print("============ последовательное выполнение ============")
+        clc = time.time()
+        for i in range(thrnum): ncount(repnum)
+        clc = time.time() - clc
+        print("время {0:.2f} секунд".format(clc))
+
+    if 't' in mode:
+        print("================ параллельные потоки ================")
+        threads = []
+        for n in range(thrnum):
+            tid = threading.Thread(target=ncount, args=(repnum,))
+            threads.append(tid)
+            tid.setDaemon(1)
+        clc = time.time()
+        for n in range(thrnum): threads[n].start()
+        for n in range(thrnum): threads[n].join()
+        clc = time.time() - clc
+        print("время {0:.2f} секунд".format(clc))
+
+    if 'p' in mode:
+        print("=============== параллельные процессы ===============")
+        threads = [];
+        fork = True
+        clc = time.time()
+        for n in range(thrnum):
+            try:
+                pid = os.fork();
+            except:
+                print("ошибка создания дочернего процесса")
+                fork = False
+                break
+            else:
+                if pid == 0:  # дочерний процесс
+                    ncount(repnum)
+                    sys.exit(0)
+                if pid > 0:  # родительский процесс
+                    threads.append(pid)
+        if fork:
+            for p in threads:
+                pid, status = os.wait()
+            clc = time.time() - clc
+            print("время {0:.2f} секунд".format(clc))
+
+    if 'm' in mode:
+        print("=============== модуль multiprocessing ==============")
+        parms = []
+        for n in range(thrnum):
+            parms.append(repnum)
+        multiprocessing.freeze_support()
+        pool = multiprocessing.Pool(processes=thrnum, )
+        clc = time.time()
+        pool.map(ncount, parms)
+        clc = time.time() - clc
+        print("время {0:.2f} секунд".format(clc))
