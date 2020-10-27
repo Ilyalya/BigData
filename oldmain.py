@@ -19,6 +19,7 @@ if __name__ == '__main__':
 
     n = int(input(print("Введи количество страниц:", "\n")))  # это строковое значение
 
+    counter = 0
     for j in range(n):
         url = f"https://qna.habr.com/questions/latest?page={j+1}"
         page = requests.get(url)
@@ -35,7 +36,8 @@ if __name__ == '__main__':
                 buf0 = lists[i].findAll('div', class_='question__content')[0].findAll('div', class_='question__content_fluid')[0]
                 buf1 = prepare_data(buf0.findAll('div', class_='question__tags')[0].findAll('ul', class_='tags-list tags-list_short')[0].text)
                 buf2 = prepare_data(buf0.findAll('h2', class_='question__title')[0].text)
-                interesting_items.append([str(i+1), buf1, buf2])
+                interesting_items.append([str(counter+1), buf1, buf2])
+                counter += 1
 
         for i in range(len(interesting_items)):
             print(interesting_items[i][0] + '. [' + interesting_items[i][1] + '] ' + interesting_items[i][2])
@@ -59,5 +61,8 @@ if __name__ == '__main__':
         f_name += '.csv'
     if f is not None:
         with open(f_name, 'w', encoding='utf-8') as file: #придётся дописывать этот костыль, чтобы ему удавалось сохранять информацию в utf-8 (этот метод хорош тем, что стирает старую информацию (передвигая указатель на начало))
+            columns = ["номер", "категория", "вопрос"]
+            writer = csv.DictWriter(file, fieldnames=columns, delimiter="\t")
+            writer.writeheader()
             writer = csv.writer(file, delimiter="\t")
             writer.writerows(interesting_items)
