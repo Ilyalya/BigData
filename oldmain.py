@@ -16,14 +16,14 @@ if __name__ == '__main__':
 
     lists = []  # список интересных статей
     interesting_items = []  # список конкретного элемента
-
-    n = int(input(print("Введи количество страниц:", "\n")))  # это строковое значение
+    n = 100
+    # n = int(input(print("Введите количество страниц:")))  # это строковое значение
 
     counter = 0
     for j in range(n):
         url = f"https://qna.habr.com/questions/latest?page={j+1}"
         page = requests.get(url)
-        print(page.status_code)
+        # print(page.status_code)
 
         soup = BeautifulSoup(page.text, "html.parser")
         #print soup
@@ -39,8 +39,9 @@ if __name__ == '__main__':
                 interesting_items.append([str(counter+1), buf1, buf2])
                 counter += 1
 
-        for i in range(len(interesting_items)):
-            print(interesting_items[i][0] + '. [' + interesting_items[i][1] + '] ' + interesting_items[i][2])
+        # for i in range(len(interesting_items)):
+            # print(interesting_items[i][0] + '. [' + interesting_items[i][1] + '] ' + interesting_items[i][2])
+        # вот это говно сверху нужно максимум для отладки, но точно чтобы не в консоль оно высералось
 
         # ВЫБИРАЕМ ПАПКУ СОХРАНЕНИЕ ЧЕРЕЗ ДИСПЕТЧЕР ФАЙЛОВ
     import csv
@@ -61,7 +62,7 @@ if __name__ == '__main__':
         f_name += '.csv'
     if f is not None:
         with open(f_name, 'w', encoding='utf-8') as file: #придётся дописывать этот костыль, чтобы ему удавалось сохранять информацию в utf-8 (этот метод хорош тем, что стирает старую информацию (передвигая указатель на начало))
-            columns = ["номер", "категория", "вопрос"]
+            columns = ["number", "category", "question"]
             writer = csv.DictWriter(file, fieldnames=columns, delimiter="\t")
             writer.writeheader()
             writer = csv.writer(file, delimiter="\t")
